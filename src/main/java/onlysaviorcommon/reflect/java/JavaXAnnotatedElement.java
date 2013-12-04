@@ -1,6 +1,8 @@
 package onlysaviorcommon.reflect.java;
 
+import onlysaviorcommon.reflect.AnnotationReader;
 import onlysaviorcommon.reflect.XAnnotionedElement;
+import static onlysaviorcommon.util.Assert.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -16,23 +18,35 @@ public class JavaXAnnotatedElement implements XAnnotionedElement {
     private JavaReflectionManager javaReflectionManager;
     private AnnotatedElement element;
 
+    protected JavaReflectionManager getJavaReflectionManager() {
+        return javaReflectionManager;
+    }
+
+    private AnnotationReader buildAnnotationReader() {
+        return javaReflectionManager.buildAnnotationReader(element);
+    }
+
     public JavaXAnnotatedElement(JavaReflectionManager manager, AnnotatedElement e) {
-        this.javaReflectionManager = manager;
-        this.element = e;
+        this.javaReflectionManager = assertNotNull(manager);
+        this.element = assertNotNull(e);
     }
 
     @Override
     public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-        return null;
+        return buildAnnotationReader().getAnnotation(annotationType);
     }
 
     @Override
     public <T extends Annotation> boolean isAnnotationPresent(Class<T> annotationType) {
-        return false;
+        return buildAnnotationReader().isAnnotationPresent(annotationType);
     }
 
     @Override
     public Annotation[] getAnnotations() {
-        return new Annotation[0];
+        return buildAnnotationReader().getAnnotations();
+    }
+
+    public AnnotatedElement getElement() {
+        return element;
     }
 }
