@@ -412,7 +412,7 @@ public class ArrayTernaryTrie<V> extends AbstractTrie<V>{
     @Override
     public Set<String> keySet()
     {
-        Set<String> keys = new HashSet<>();
+        Set<String> keys = new HashSet<String>();
 
         for (int r=0;r<=_rows;r++)
         {
