@@ -51,7 +51,7 @@ public abstract class AbstractTrie<V> implements Trie<V> {
     @Override
     public V getBest(byte[] b, int offset, int len)
     {
-        return getBest(new String(b,offset,len, StandardCharsets.ISO_8859_1));
+        return getBest(new String(b,offset,len));
     }
 
     @Override
