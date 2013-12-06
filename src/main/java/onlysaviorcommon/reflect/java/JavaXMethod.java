@@ -20,7 +20,7 @@ public class JavaXMethod extends JavaXMember implements XMethod {
 
     static JavaXMethod create(Member member, TypeEnvironment context, JavaReflectionManager factory) {
         final Type type = typeOf(member, context);
-        JavaXType javaXType = factory.toXType(type, context);
+        JavaXType javaXType = factory.toXType(context,type);
         return new JavaXMethod(member,type,context, factory, javaXType);
     }
 
