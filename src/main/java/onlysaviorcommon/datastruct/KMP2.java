@@ -34,11 +34,11 @@ public class KMP2 {
     public void computeFail() {
         // init:
         fail = new int[P.length];
-        fail[1] = 0;
+        fail[0] = 0;
         // loop:
         for (int k=2; k< fail.length; k++) {
             int kk = fail[k-1];
-            while (kk>0 && (P[kk] != P[k-1]))
+            while (kk>0 && (P[kk + 1] != P[k]))
                 kk = fail[kk];
             fail[k] = 1 + kk;
         }
@@ -51,16 +51,21 @@ public class KMP2 {
     public int find(int start) {
         // init:
         int j = start; // text index
-        int k = 1; // pattern index
+        int k = 0; // pattern index
         // loop:
-        while (j < T.length) {
-            if (k >= P.length) return(j - k + 1);
-            if ((T[j] == P[k]) || (k==0)) {
+        while (j < T.length && k < P.length) {
+            //if (k >= P.length) return(j - k + 1);
+            if ((T[j] == P[k])) {
                 j++; k++;
+            } else if(k == 0) {
+                j++;
             } else {
                 k = fail[k];	// k could become 0
             }
         } // while
+
+        if (k == P.length)
+            return j -k + 1;
         // Not found:
         return(-1);
     } // find()
@@ -70,10 +75,10 @@ public class KMP2 {
      ******************************************************/
     void output() {
         System.out.print("> Pattern = \"");
-        for (int i=1; i< P.length; i++)
+        for (int i=0; i< P.length; i++)
             System.out.print(P[i]);
         System.out.print("\"\n> Text    = \"");
-        for (int i=1; i< T.length; i++)
+        for (int i=0; i< T.length; i++)
             System.out.print(T[i]);
         System.out.println("\"");
     } // output()
@@ -95,17 +100,17 @@ public class KMP2 {
         //	(the first is a dummy key)
 
         // char[] p = {'0', 'o', 'u'};
-        char[] p = {'0', 'y', 'o', 'u'};
-        char[] t = {'0',
-                'a', 'r', 'e', ' ', 'y', 'o', 'u', ' ',
-                'a', ' ', 'y', 'o', 'u', 't', 'h', '?'};
+        char[] p = {'a', 'b', 'c','a','b','c'};
+        char[] t = {
+                'a', 'b', 'e', ' ', 'a', 'b', 'c', 'f',
+                'a', ' ', 'a', 'b', 'c', 'a', 'b', 'c'};
 
         // construct a KMP object
         KMP2 m = new KMP2(p, t);
         m.output();  	// print data
 
         // find all matches
-        int f = m.find(1);
+        int f = m.find(0);
         if (f<1)
             System.out.println(">>  No match found");
         else {
