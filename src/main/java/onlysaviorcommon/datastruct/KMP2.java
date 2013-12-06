@@ -7,9 +7,10 @@ package onlysaviorcommon.datastruct;
  *		Again, the goal is to find an occurrence of a pattern P in a text T.
  *		CONVENTION:
  *		The first index (i=0) of arrays are not used.
- *
+ * bug fix when index begin from 0 by onlysavior
  * @author	Chee Yap
  * @date	Apr 25, 2001 (for Basic Algorithms class)
+ * @author  onlysavior
  */
 
 public class KMP2 {
