@@ -25,4 +25,25 @@ public class StringUtil {
             '\150','\151','\152','\153','\154','\155','\156','\157',
             '\160','\161','\162','\163','\164','\165','\166','\167',
             '\170','\171','\172','\173','\174','\175','\176','\177' };
+
+    public static String trimToNull(String s) {
+        if(s == null)
+            return null;
+        s = s.trim();
+
+        if(s.length() == 0)
+            return null;
+
+        return s;
+    }
+
+    public static boolean isEquals(String s1, String s2) {
+        if(s1 == null)
+            return s2 == null;
+
+        if(s1.length() != s2.length())
+            return false;
+
+        return s1.equals(s2);
+    }
 }
