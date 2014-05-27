@@ -1,97 +1,164 @@
 package onlysaviorcommon.datastruct;
 
-/**
- * Created with IntelliJ IDEA.
- * User: yanye.lj
- * Date: 13-12-6
- * Time: 下午3:23
- * To change this template use File | Settings | File Templates.
- */
 public class BoyerMoore {
 
-    private static final int MAX_CHAR = 256;
-    private int[] goodShift;
-    private int[] badShift;
+    public static final int ALPHABET_SIZE = Character.MAX_VALUE + 1;
 
-    private char[] pattern;
-    private char[] text;
+    private String text;
+    private String pattern;
 
-    public BoyerMoore(String text, String pattern) {
-        this.text = text.toCharArray();
-        this.pattern = pattern.toCharArray();
+    private int[] last;
+    private int[] match;
+    private int[] suffix;
 
-        goodShift = new int[pattern.length()];
-        for(int i = 0; i < pattern.length(); i++) {
-            goodshift(this.pattern,i);
-        }
-
-        badShift = new int[MAX_CHAR];
+    public BoyerMoore(String pattern, String text) {
+        this.text = text;
+        this.pattern = pattern;
+        last = new int[ALPHABET_SIZE];
+        match = new int[pattern.length()];
+        suffix = new int[pattern.length()];
     }
 
-    public int find() {
-        int offset = 0;
-        int scan = 0;
-        int last = pattern.length - 1;
-        int maxoffset = text.length - pattern.length;
+    /**
+     * Searches the pattern in the text.
+     * Returns the position of the first occurrence, if found and -1 otherwise.
+     */
+    public int match() {
+        // Preprocessing
+        computeLast();
+        computeMatch();
 
-
-        for(int i = 0; i < last; i++){
-            badShift[pattern[i]] = last - i;
-        }
-
-
-        // needle can still be inside haystack
-        while(offset <= maxoffset){
-
-            // start at end of pattern and match backwards
-            for(scan = last; pattern[scan] == text[scan+offset]; scan--){
-
-                // we have a match
-                if(scan == 0){
-                    return offset;
+        // Searching
+        int i = pattern.length() - 1;
+        int j = pattern.length() - 1;
+        while (i < text.length()) {
+            if (pattern.charAt(j) == text.charAt(i)) {
+                if (j == 0) {
+                    //the left-most match is found
+                    return i;
                 }
+                j--;
+                i--;
+            } else { //a difference
+                i += pattern.length() -1 - j + Math.max(j - last[text.charAt(i)], match[j]);
+                j = pattern.length() - 1;
             }
-
-
-            // shift as much as possible based on the good and bad shift
-            offset += Math.max(badShift[text[offset + last]],
-                    goodShift[last - scan]);
-
         }
-        // indicates no match
         return -1;
     }
 
-    private int goodshift(char[] pattern, int match) {
-        if(match >= pattern.length || match < 0) {
-            return -1;
+    /**
+     * Computes the function <i>last</i> and stores its values in the array <code>last</code>.
+     * The function is defined as follows:
+     * <pre>
+     * last(Char ch) = the index of the right-most occurrence of the character ch
+     *                                                           in the pattern;
+     *                 -1 if ch does not occur in the pattern.
+     * </pre>
+     * The running time is O(pattern.length() + |Alphabet|).
+     */
+    private void computeLast() {
+        for (int k = 0; k < last.length; k++) {
+            last[k] = -1;
         }
-
-        if(match == 0)
-            return 1;
-
-        int max = pattern.length - 1;
-        int offset = max;
-        int last = match - 1;
-
-        while (offset > 0) {
-            --offset;  //back one step
-            for(int i = 0; (offset - i >= 0) && pattern[(max - i)] == pattern[(offset - i)] ; i++){
-
-                if( (offset - i) == 0 ){
-                    return max - offset;
-                }
-
-                if(i == last){
-                    // next char must be missmatch for this to count
-                    if( pattern[(max - match)] != pattern[(offset - match)] ){
-                        return max - offset;
-                    }else{
-                        break;
-                    }
-                }
+        for (int j = pattern.length()-1; j >= 0; j--) {
+            if (last[pattern.charAt(j)] < 0) {
+                last[pattern.charAt(j)] = j;
             }
         }
-        return pattern.length;
+    }
+
+    /**
+     * Computes the function <i>match</i> and stores its values in the array <code>match</code>.
+     * The function is defined as follows:
+     * <pre>
+     * match(j) = min{ s | 0 < s <= j && p[j-s]!=p[j]
+     *                            && p[j-s+1]..p[m-s-1] is suffix of p[j+1]..p[m-1] },
+     *                                                         if such s exists, else
+     *            min{ s | j+1 <= s <= m
+     *                            && p[0]..p[m-s-1] is suffix of p[j+1]..p[m-1] },
+     *                                                         if such s exists,
+     *            m, otherwise,
+     * where m is the pattern's length and p is the pattern.
+     * </pre>
+     * The running time is O(pattern.length()).
+     */
+    private void computeMatch() {
+    /* Phase 1 */
+        for (int j = 0; j < match.length; j++) {
+            match[j] = match.length;
+        } //O(m)
+
+        computeSuffix(); //O(m)
+
+    /* Phase 2 */
+        //Uses an auxiliary array, backwards version of the KMP failure function.
+        //suffix[i] = the smallest j > i s.t. p[j..m-1] is a prefix of p[i..m-1],
+        //if there is no such j, suffix[i] = m
+
+        //Compute the smallest shift s, such that 0 < s <= j and
+        //p[j-s]!=p[j] and p[j-s+1..m-s-1] is suffix of p[j+1..m-1] or j == m-1},
+        //                                                         if such s exists,
+        for (int i = 0; i < match.length - 1; i++) {
+            int j = suffix[i + 1] - 1; // suffix[i+1] <= suffix[i] + 1
+            if (suffix[i] > j) { // therefore pattern[i] != pattern[j]
+                match[j] = j - i;
+            } else {// j == suffix[i]
+                match[j] = Math.min(j - i + match[i], match[j]);
+            }
+        } //End of Phase 2
+
+    /* Phase 3 */
+        //Uses the suffix array to compute each shift s such that
+        //p[0..m-s-1] is a suffix of p[j+1..m-1] with j < s < m
+        //and stores the minimum of this shift and the previously computed one.
+        if (suffix[0] < pattern.length()) {
+            for (int j = suffix[0] - 1; j >= 0; j--) {
+                if (suffix[0] < match[j]) { match[j] = suffix[0]; }
+            }
+            int j = suffix[0];
+            for (int k = suffix[j]; k < pattern.length(); k = suffix[k]) {
+                while (j < k) {
+                    if (match[j] > k) match[j] = k;
+                    j++;
+                }
+            }
+        }//endif
+    }
+
+    /**
+     * Computes the values of <code>suffix</code>, which is an auxiliary array,
+     * backwards version of the KMP failure function.
+     * <br>
+     * suffix[i] = the smallest j > i s.t. p[j..m-1] is a prefix of p[i..m-1],
+     * if there is no such j, suffix[i] = m, i.e. <br>
+     * p[suffix[i]..m-1] is the longest prefix of p[i..m-1], if suffix[i] < m.
+     * <br>
+     * The running time for computing the <code>suffix</code> is O(m).
+     */
+    private void computeSuffix() {
+        suffix[suffix.length-1] = suffix.length;
+        int j = suffix.length - 1;
+        //suffix[i] = m - the length of the longest prefix of p[i..m-1]
+        for (int i = suffix.length - 2; i >= 0; i--) {
+            while (j < suffix.length - 1 && pattern.charAt(j) != pattern.charAt(i)) {
+                j = suffix[j + 1] - 1;
+            }
+            if (pattern.charAt(j) == pattern.charAt(i)) { j--; }
+            suffix[i] = j + 1;
+        }
+
+    }
+
+    public static void main(String[] args) {
+        String toSearch = "here is simple example";
+        String pattern = "example";
+
+        BoyerMoore b = new BoyerMoore(pattern, toSearch);
+        int r = b.match();
+        System.out.println(r);
+        if (r != -1) {
+            System.out.println(toSearch.substring(r));
+        }
     }
 }

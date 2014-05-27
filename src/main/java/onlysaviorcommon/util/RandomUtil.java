@@ -25,7 +25,6 @@ public class RandomUtil {
     private String select(int[] areaEnds, String[] keys){
         int sum = areaEnds[areaEnds.length - 1];
         if(sum == 0) {
-            logger.error("areaEnds: "+ Arrays.toString(areaEnds));
             return null;
         }
         //选择的过
