@@ -1,5 +1,6 @@
 
 /onlysaviorcommon.iml
 /target
-
+*.ipr
+*.iws
 /.idea
