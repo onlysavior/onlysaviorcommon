@@ -22,8 +22,9 @@
 
 package onlysaviorcommon.util.chmv8;
 
-import io.netty.util.internal.IntegerHolder;
-import io.netty.util.internal.InternalThreadLocalMap;
+
+import onlysaviorcommon.util.internal.IntegerHolder;
+import onlysaviorcommon.util.internal.InternalThreadLocalMap;
 
 import java.io.ObjectStreamField;
 import java.io.Serializable;

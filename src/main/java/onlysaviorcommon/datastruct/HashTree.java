@@ -35,7 +35,6 @@ import java.util.Set;
  * tree, or to extract information from the tree.
  *
  * @see HashTreeTraverser
- * @see SearchByClass
  */
 public class HashTree implements Serializable, Map<Object, HashTree>, Cloneable {
 
@@ -752,10 +751,12 @@ public class HashTree implements Serializable, Map<Object, HashTree>, Cloneable 
      * Finds the given current key, and replaces it with the given new key. Any
      * tree structure found under the original key is moved to the new key.
      */
-    public void replace(Object currentKey, Object newKey) {
+    public HashTree replace(Object currentKey, HashTree newKey) {
         HashTree tree = getTree(currentKey);
         data.remove(currentKey);
         data.put(newKey, tree);
+
+        return tree;
     }
 
     /**
